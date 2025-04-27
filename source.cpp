@@ -4,6 +4,8 @@
 #include <limits.h>
 #include <array>
 #include <sstream>
+#include <random>
+#include <time.h>
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #define max(a,b) (((a) > (b)) ? (a) : (b))
@@ -22,6 +24,8 @@ int scoreSet(vector<unsigned int>, unsigned int);
 int tabScore(vector<vector<int> >, unsigned int);
 array<int, 2> miniMax(vector<vector<int> >&, unsigned int, int, int, unsigned int);
 int heurFunction(unsigned int, unsigned int, unsigned int);
+int ai2Move();
+int randomMove();
 
 // I'll be real and say this is just to avoid magic numbers
 unsigned int NUM_COL = 7; // how wide is the board
@@ -41,13 +45,13 @@ vector<vector<int>> board(NUM_ROW, vector<int>(NUM_COL)); // the game board
  * loops between players while they take turns
  */
 void playGame() {
-	printBoard(board); // print initial board
+	// printBoard(board); // print initial board
 	while (!gameOver) { // while no game over state
 		if (currentPlayer == COMPUTER) { // AI move
-			makeMove(board, aiMove(), COMPUTER);
+			makeMove(board, randomMove(), COMPUTER);
 		}
 		else if (currentPlayer == PLAYER) { // player move
-			makeMove(board, userMove(), PLAYER);
+			makeMove(board, randomMove(), PLAYER);
 		}
 		else if (turns == NUM_ROW * NUM_COL) { // if max number of turns reached
 			gameOver = true;
@@ -55,9 +59,10 @@ void playGame() {
 		gameOver = winningMove(board, currentPlayer); // check if player won
 		currentPlayer = (currentPlayer == 1) ? 2 : 1; // switch player
 		turns++; // iterate number of turns
-		cout << endl;
-		printBoard(board); // print board after successful move
+		// cout << endl;
+		// printBoard(board); // print board after successful move
 	}
+	printBoard(board);
 	if (turns == NUM_ROW * NUM_COL) { // if draw condition
 		cout << "Draw!" << endl;
 	}
@@ -117,8 +122,22 @@ int userMove() {
  * @return - the column number for best move
  */
 int aiMove() {
-	cout << "AI is thinking about a move..." << endl;
+	// cout << "AI is thinking about a move..." << endl;
 	return miniMax(board, MAX_DEPTH, 0 - INT_MAX, INT_MAX, COMPUTER)[1];
+}
+
+int ai2Move() {
+	// cout << "Move 2\n";
+	return miniMax(board, MAX_DEPTH, 0-INT_MAX, INT_MAX, PLAYER)[1];
+}
+
+int randomMove() {
+	int col_choice = rand() % NUM_COL;
+	while(board[NUM_ROW-1][col_choice] != 0)
+	{
+		col_choice = rand() % NUM_COL;
+	}
+	return col_choice;
 }
 
 /**
@@ -428,6 +447,7 @@ int main(int argc, char** argv) {
 		if (flag) { cout << "Invalid command line argument, using default depth = 5." << endl; }
 		else { MAX_DEPTH = i; }
 	}
+	srand(time(0));
 	initBoard(); // initial setup
 	playGame(); // begin the game
 	return 0; // exit state
