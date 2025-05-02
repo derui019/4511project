@@ -130,7 +130,7 @@ int aiMove() {
 
 int ai2Move() {
 	// cout << "Move 2\n";
-	return miniMax(board, MAX_DEPTH, 0-INT_MAX, INT_MAX, PLAYER)[1];
+	return miniMax(board, 2, 0-INT_MAX, INT_MAX, PLAYER)[1];
 }
 
 int randomMove() {
@@ -506,6 +506,11 @@ void simulateGames(unsigned int numGames,
             int move = (currentPlayer == COMPUTER)
                        ? aiFunc()
                        : randomMove();
+			if (currentPlayer == COMPUTER) move = aiFunc();
+			else {
+				if (rand() % 4) move = ai2Move();
+				else move = randomMove();
+			}
             makeMove(board, move, currentPlayer);
 
             // check for win or draw
@@ -579,7 +584,6 @@ int main(int argc, char** argv) {
     if (numGames > 0) {
         // run two different heuristics, for example:
         simulateGames(numGames, aiMove,  "Maximizing Heuristic");
-        simulateGames(numGames, ai2Move, "Minimizing Heuristic");
         return 0;
     }
 
