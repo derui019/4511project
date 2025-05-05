@@ -316,7 +316,7 @@ int scoreSet(vector<unsigned int> v, unsigned int p) {
  * @param z - empty spots
  * @return - the score as tabulated
  */
-/*int heurFunction(unsigned int g, unsigned int b, unsigned int z) {
+int heurFunction(unsigned int g, unsigned int b, unsigned int z) {
 	int score = 0;
 	if (g == 4) { score += 1000000; } // preference to go for winning move vs. block
 	else if (g == 3 && z == 1) { score += 10000; }
@@ -325,18 +325,18 @@ int scoreSet(vector<unsigned int> v, unsigned int p) {
 	else if (b == 3 && z == 1) { score -= 500; } // preference to block
 	else if (b == 4) { score -= 100000; }
 	return score;
-}*/
+}
 
 
 /**
- * defensive """heuristic function""" is pretty bad, but it seems to work
+ * old obsolete defensive """heuristic function""" is pretty bad, but it seems to work
  * it scores 2s in a row and 3s in a row
  * @param g - good points
  * @param b - bad points
  * @param z - empty spots
  * @return - the score as tabulated
  */
-int heurFunction(unsigned int g, unsigned int b, unsigned int z) {
+/*int heurFunction(unsigned int g, unsigned int b, unsigned int z) {
 	int score = 0;
 	if (g == 4) { score += 100000; } // preference to go for winning move vs. block
 	else if (g == 3 && z == 1) { score += 500; }
@@ -345,7 +345,26 @@ int heurFunction(unsigned int g, unsigned int b, unsigned int z) {
 	else if (b == 3 && z == 1) { score -= 10000; } // preference to block
 	else if (b == 4) { score -= 1000000; }
 	return score;
-}
+}*/
+
+/**
+ * updated defensive """heuristic function""" is pretty bad, but it seems to work
+ * it scores 2s in a row and 3s in a row
+ * @param g - good points
+ * @param b - bad points
+ * @param z - empty spots
+ * @return - the score as tabulated
+ */
+/*int heurFunction(unsigned int g, unsigned int b, unsigned int z) {
+	int score = 0;
+	if (g == 4) { score += 1000000; } // preference to go for winning move vs. block
+	else if (g == 3 && z == 1) { score += 500; }
+	else if (g == 2 && z == 2) { score += 50; }
+	else if (b == 2 && z == 2) { score -= 1000; } // preference to block
+	else if (b == 3 && z == 1) { score -= 10000; } // preference to block
+	else if (b == 4) { score -= 100000; }
+	return score;
+}*/
 
 
 /**
