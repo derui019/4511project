@@ -6,6 +6,8 @@
 #include <sstream>
 #include <random>
 #include <time.h>
+#include <chrono>
+#include <iomanip>
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #define max(a,b) (((a) > (b)) ? (a) : (b))
@@ -128,7 +130,7 @@ int aiMove() {
 
 int ai2Move() {
 	// cout << "Move 2\n";
-	return miniMax(board, MAX_DEPTH, 0-INT_MAX, INT_MAX, PLAYER)[1];
+	return miniMax(board, 2, 0-INT_MAX, INT_MAX, PLAYER)[1];
 }
 
 int randomMove() {
@@ -288,7 +290,46 @@ int scoreSet(vector<unsigned int> v, unsigned int p) {
 }
 
 /**
- * my """heuristic function""" is pretty bad, but it seems to work
+ * balanced """heuristic function""" is pretty bad, but it seems to work
+ * it scores 2s in a row and 3s in a row
+ * @param g - good points
+ * @param b - bad points
+ * @param z - empty spots
+ * @return - the score as tabulated
+ */
+/*int heurFunction(unsigned int g, unsigned int b, unsigned int z) {
+	int score = 0;
+	if (g == 4) { score += 500001; } // preference to go for winning move vs. block
+	else if (g == 3 && z == 1) { score += 5000; }
+	else if (g == 2 && z == 2) { score += 500; }
+	else if (b == 2 && z == 2) { score -= 501; } // light preference to block
+	else if (b == 3 && z == 1) { score -= 5001; } // light preference to block
+	else if (b == 4) { score -= 500000; }
+	return score;
+}*/
+
+/**
+ * agressive """heuristic function""" is pretty bad, but it seems to work
+ * it scores 2s in a row and 3s in a row
+ * @param g - good points
+ * @param b - bad points
+ * @param z - empty spots
+ * @return - the score as tabulated
+ */
+/*int heurFunction(unsigned int g, unsigned int b, unsigned int z) {
+	int score = 0;
+	if (g == 4) { score += 1000000; } // preference to go for winning move vs. block
+	else if (g == 3 && z == 1) { score += 10000; }
+	else if (g == 2 && z == 2) { score += 1000; }
+	else if (b == 2 && z == 2) { score -= 50; } // preference to block
+	else if (b == 3 && z == 1) { score -= 500; } // preference to block
+	else if (b == 4) { score -= 100000; }
+	return score;
+}*/
+
+
+/**
+ * defensive """heuristic function""" is pretty bad, but it seems to work
  * it scores 2s in a row and 3s in a row
  * @param g - good points
  * @param b - bad points
@@ -297,14 +338,15 @@ int scoreSet(vector<unsigned int> v, unsigned int p) {
  */
 int heurFunction(unsigned int g, unsigned int b, unsigned int z) {
 	int score = 0;
-	if (g == 4) { score += 500001; } // preference to go for winning move vs. block
-	else if (g == 3 && z == 1) { score += 5000; }
-	else if (g == 2 && z == 2) { score += 500; }
-	else if (b == 2 && z == 2) { score -= 501; } // preference to block
-	else if (b == 3 && z == 1) { score -= 5001; } // preference to block
-	else if (b == 4) { score -= 500000; }
+	if (g == 4) { score += 100000; } // preference to go for winning move vs. block
+	else if (g == 3 && z == 1) { score += 500; }
+	else if (g == 2 && z == 2) { score += 50; }
+	else if (b == 2 && z == 2) { score -= 1000; } // preference to block
+	else if (b == 3 && z == 1) { score -= 10000; } // preference to block
+	else if (b == 4) { score -= 1000000; }
 	return score;
 }
+
 
 /**
  * function to determine if a winning move is made
@@ -436,18 +478,115 @@ void errorMessage(int t) {
 }
 
 /**
+ * Simulate a batch of games between a given AI and the random mover.
+ *
+ * @param numGames   how many games to play
+ * @param aiFunc     pointer to the AI move function (e.g. aiMove or ai2Move)
+ * @param aiName     label to print for this AI
+ */
+void simulateGames(unsigned int numGames,
+                   int (*aiFunc)(),
+                   const string& aiName) {
+    unsigned int aiWins = 0, randomWins = 0, draws = 0;
+
+	std::chrono::duration<double> totalTime{0};
+
+    for (unsigned int g = 0; g < numGames; ++g) {
+        // reset globals
+        initBoard();
+        gameOver = false;
+        turns = 0;
+        currentPlayer = COMPUTER;  // let AI always start (or swap if you like)
+
+		// start timing game
+		auto t0 = std::chrono::high_resolution_clock::now();
+
+        // play one game
+        while (!gameOver) {
+            int move = (currentPlayer == COMPUTER)
+                       ? aiFunc()
+                       : randomMove();
+			if (currentPlayer == COMPUTER) move = aiFunc();
+			else {
+				if (rand() % 4) move = ai2Move();
+				else move = randomMove();
+			}
+            makeMove(board, move, currentPlayer);
+
+            // check for win or draw
+            if (winningMove(board, currentPlayer)) {
+                gameOver = true;
+            } else if (turns + 1 == NUM_ROW * NUM_COL) {
+                gameOver = true;
+            }
+
+            currentPlayer = (currentPlayer == COMPUTER) ? PLAYER : COMPUTER;
+            ++turns;
+        }
+
+		// stop timer
+		auto t1 = std::chrono::high_resolution_clock::now();
+		totalTime += (t1 - t0);
+
+        // tally result
+        if (turns == NUM_ROW * NUM_COL) {
+            ++draws;
+        } else {
+            // winner is the one who just moved, which is the opposite of currentPlayer
+            unsigned int winner = (currentPlayer == COMPUTER) ? PLAYER : COMPUTER;
+            if (winner == COMPUTER) ++aiWins;
+            else                        ++randomWins;
+        }
+    }
+
+	double avgSec = totalTime.count() / numGames;
+
+    // report
+    cout << endl
+		 << "MAX_DEPTH: " << MAX_DEPTH << "\n"
+         << aiName << " vs Random over " << numGames << " games:\n"
+         << "  AI wins:     " << aiWins
+         << " (" << (aiWins * 100.0 / numGames) << "%)\n"
+         << "  Random wins: " << randomWins
+         << " (" << (randomWins * 100.0 / numGames) << "%)\n"
+         << "  Draws:       " << draws
+         << " (" << (draws * 100.0 / numGames) << "%)\n"
+		 << fixed << setprecision(6)
+		 << " Avg time:		" << avgSec << " seconds/game\n"
+         << endl;
+}
+
+
+/**
  * main driver
  */
 int main(int argc, char** argv) {
 	int i = -1; bool flag = false;
-	if (argc == 2) {
+	if (argc >= 2) {
 		istringstream in(argv[1]);
 		if (!(in >> i)) { flag = true; }
 		if (i > (int)(NUM_ROW * NUM_COL) || i <= -1) { flag = true; }
 		if (flag) { cout << "Invalid command line argument, using default depth = 5." << endl; }
 		else { MAX_DEPTH = i; }
 	}
-	srand(time(0));
+
+	unsigned int numGames = 0;
+    if (argc == 3) {
+        istringstream in2(argv[2]);
+        if (!(in2 >> numGames)) {
+            cout << "Invalid #games, skipping simulation.\n";
+        }
+    }
+
+    // seed and init
+    srand(time(0));
+
+    if (numGames > 0) {
+        // run two different heuristics, for example:
+        simulateGames(numGames, aiMove,  "Maximizing Heuristic");
+        return 0;
+    }
+
 	initBoard(); // initial setup
 	playGame(); // begin the game
 	return 0; // exit state

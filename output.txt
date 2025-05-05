@@ -1,0 +1,40 @@
+
+MAX_DEPTH: 1
+Maximizing Heuristic vs Random over 250 games:
+  AI wins:     167 (66.8%)
+  Random wins: 82 (32.8%)
+  Draws:       1 (0.4%)
+ Avg time:		0.007648 seconds/game
+
+
+MAX_DEPTH: 2
+Maximizing Heuristic vs Random over 250 games:
+  AI wins:     174 (69.6%)
+  Random wins: 53 (21.2%)
+  Draws:       23 (9.2%)
+ Avg time:		0.020666 seconds/game
+
+
+MAX_DEPTH: 3
+Maximizing Heuristic vs Random over 250 games:
+  AI wins:     172 (68.8%)
+  Random wins: 50 (20%)
+  Draws:       28 (11.2%)
+ Avg time:		0.069897 seconds/game
+
+
+MAX_DEPTH: 4
+Maximizing Heuristic vs Random over 250 games:
+  AI wins:     183 (73.2%)
+  Random wins: 26 (10.4%)
+  Draws:       41 (16.4%)
+ Avg time:		0.273060 seconds/game
+
+
+MAX_DEPTH: 5
+Maximizing Heuristic vs Random over 250 games:
+  AI wins:     195 (78%)
+  Random wins: 31 (12.4%)
+  Draws:       24 (9.6%)
+ Avg time:		0.901842 seconds/game
+
